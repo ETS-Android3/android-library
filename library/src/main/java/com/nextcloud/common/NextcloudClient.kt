@@ -30,6 +30,7 @@ package com.nextcloud.common
 
 import android.content.Context
 import android.net.Uri
+import com.nextcloud.operations.dav.OkHttpDavMethodBase
 import com.owncloud.android.lib.common.OwnCloudClient
 import com.owncloud.android.lib.common.OwnCloudClientFactory.DEFAULT_CONNECTION_TIMEOUT_LONG
 import com.owncloud.android.lib.common.OwnCloudClientFactory.DEFAULT_DATA_TIMEOUT_LONG
@@ -37,6 +38,7 @@ import com.owncloud.android.lib.common.accounts.AccountUtils
 import com.owncloud.android.lib.common.network.AdvancedX509TrustManager
 import com.owncloud.android.lib.common.network.NetworkUtils
 import com.owncloud.android.lib.common.network.RedirectionPath
+import com.owncloud.android.lib.common.network.WebdavUtils
 import com.owncloud.android.lib.common.operations.RemoteOperation
 import com.owncloud.android.lib.common.operations.RemoteOperationResult
 import com.owncloud.android.lib.common.utils.Log_OC
@@ -118,6 +120,11 @@ class NextcloudClient private constructor(
         return method.execute(this)
     }
 
+    @Throws(Exception::class)
+    fun execute(method: OkHttpDavMethodBase) {
+        return method.execute(this)
+    }
+
     internal fun execute(request: Request): ResponseOrError {
         return try {
             val response = client.newCall(request).execute()
@@ -185,5 +192,13 @@ class NextcloudClient private constructor(
 
     fun getUserIdPlain(): String {
         return delegate.userId!!
+    }
+
+    fun getFilesDavUri(path: String): String {
+        return getDavUri().toString() + "/files/" + userId + "/" + WebdavUtils.encodePath(path)
+    }
+
+    fun getDavUri(): Uri {
+        return Uri.parse(baseUri.toString() + AccountUtils.WEBDAV_PATH_9_0)
     }
 }

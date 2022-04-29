@@ -31,6 +31,7 @@ import android.system.ErrnoException;
 import android.system.OsConstants;
 
 import com.nextcloud.common.OkHttpMethodBase;
+import com.nextcloud.operations.dav.OkHttpDavMethodBase;
 import com.owncloud.android.lib.common.accounts.AccountUtils.AccountNotFoundException;
 import com.owncloud.android.lib.common.network.CertificateCombinedException;
 import com.owncloud.android.lib.common.utils.Log_OC;
@@ -62,6 +63,7 @@ import java.util.Locale;
 
 import javax.net.ssl.SSLException;
 
+import at.bitfire.dav4jvm.exception.ConflictException;
 import lombok.ToString;
 import okhttp3.Headers;
 
@@ -307,6 +309,8 @@ public class RemoteOperationResult<T extends Object> implements Serializable {
             }
         } else if (e instanceof FileNotFoundException) {
             mCode = ResultCode.LOCAL_FILE_NOT_FOUND;
+        } else if (e instanceof ConflictException) {
+            mCode = ResultCode.CONFLICT;
         } else {
             mCode = ResultCode.UNKNOWN_ERROR;
         }
@@ -314,6 +318,10 @@ public class RemoteOperationResult<T extends Object> implements Serializable {
 
     public RemoteOperationResult(boolean success, OkHttpMethodBase httpMethod) {
         this(success, httpMethod.getStatusCode(), httpMethod.getStatusText(), httpMethod.getResponseHeaders());
+    }
+
+    public RemoteOperationResult(boolean success, OkHttpDavMethodBase davMethod) {
+        this(success, davMethod.statusCode());
     }
 
     /**

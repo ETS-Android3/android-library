@@ -30,6 +30,7 @@ import com.owncloud.android.AbstractIT
 import com.owncloud.android.lib.common.operations.RemoteOperationResult
 import com.owncloud.android.lib.resources.files.model.RemoteFile
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -47,10 +48,14 @@ class CheckEtagRemoteOperationIT : AbstractIT() {
         val remoteFile = readResult.data[0] as RemoteFile
         val eTag = remoteFile.etag
 
-        var eTagResult = CheckEtagRemoteOperation(remotePath, eTag).execute(client)
+        var eTagResult = CheckEtagRemoteOperation(remotePath, eTag).execute(nextcloudClient)
         assertEquals(RemoteOperationResult.ResultCode.ETAG_UNCHANGED, eTagResult.code)
 
-        eTagResult = CheckEtagRemoteOperation(remotePath, "wrongEtag").execute(client)
+        eTagResult = CheckEtagRemoteOperation(remotePath, "wrongEtag").execute(nextcloudClient)
         assertEquals(RemoteOperationResult.ResultCode.ETAG_CHANGED, eTagResult.code)
+
+        eTagResult = CheckEtagRemoteOperation("wrongPath", "wrongEtag").execute(nextcloudClient)
+        assertFalse(eTagResult.isSuccess)
+        assertEquals(RemoteOperationResult.ResultCode.FILE_NOT_FOUND, eTagResult.code)
     }
 }

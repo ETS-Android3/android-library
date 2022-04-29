@@ -24,15 +24,13 @@
 
 package com.owncloud.android.lib.resources.files;
 
-import android.text.TextUtils;
-
-import com.owncloud.android.lib.common.OwnCloudClient;
+import com.nextcloud.common.NextcloudClient;
+import com.nextcloud.operations.dav.MkColMethod;
 import com.owncloud.android.lib.common.operations.RemoteOperation;
 import com.owncloud.android.lib.common.operations.RemoteOperationResult;
 import com.owncloud.android.lib.common.utils.Log_OC;
 
 import org.apache.commons.httpclient.HttpStatus;
-import org.apache.jackrabbit.webdav.client.methods.MkColMethod;
 
 
 /**
@@ -70,13 +68,8 @@ public class CreateFolderRemoteOperation extends RemoteOperation {
         this.token = token;
     }
 
-    /**
-     * Performs the operation
-     *
-     * @param client Client object to communicate with the remote ownCloud server.
-     */
     @Override
-    protected RemoteOperationResult run(OwnCloudClient client) {
+    public RemoteOperationResult run(NextcloudClient client) {
         RemoteOperationResult result;
 
         result = createFolder(client);
@@ -92,42 +85,41 @@ public class CreateFolderRemoteOperation extends RemoteOperation {
         return result;
     }
 
-
-    private RemoteOperationResult createFolder(OwnCloudClient client) {
+    private RemoteOperationResult createFolder(NextcloudClient client) {
         RemoteOperationResult result;
         MkColMethod mkCol = null;
         try {
             mkCol = new MkColMethod(client.getFilesDavUri(remotePath));
 
-            if (!TextUtils.isEmpty(token)) {
-                mkCol.addRequestHeader(E2E_TOKEN, token);
-            }
-            
-            client.executeMethod(mkCol, READ_TIMEOUT, CONNECTION_TIMEOUT);
+//            if (!TextUtils.isEmpty(token)) {
+//                mkCol.addRequestHeader(E2E_TOKEN, token);
+//            }
 
-            if (HttpStatus.SC_METHOD_NOT_ALLOWED == mkCol.getStatusCode()) {
+            client.execute(mkCol);
+            int statusCode = mkCol.statusCode();
+
+            if (HttpStatus.SC_METHOD_NOT_ALLOWED == statusCode) {
                 result = new RemoteOperationResult(RemoteOperationResult.ResultCode.FOLDER_ALREADY_EXISTS);
             } else {
                 result = new RemoteOperationResult(mkCol.succeeded(), mkCol);
             }
 
             Log_OC.d(TAG, "Create directory " + remotePath + ": " + result.getLogMessage());
-            client.exhaustResponse(mkCol.getResponseBodyAsStream());
+            //client.exhaustResponse(mkCol.getResponseBodyAsStream());
         } catch (Exception e) {
             result = new RemoteOperationResult(e);
             Log_OC.e(TAG, "Create directory " + remotePath + ": " + result.getLogMessage(), e);
 
         } finally {
-            if (mkCol != null)
+            if (mkCol != null) {
                 mkCol.releaseConnection();
+            }
         }
         return result;
     }
 
-    private RemoteOperationResult createParentFolder(String parentPath, OwnCloudClient client) {
+    private RemoteOperationResult createParentFolder(String parentPath, NextcloudClient client) {
         RemoteOperation operation = new CreateFolderRemoteOperation(parentPath, createFullPath);
         return operation.execute(client);
     }
-
-
 }

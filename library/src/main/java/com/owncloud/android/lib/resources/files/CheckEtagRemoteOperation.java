@@ -27,28 +27,25 @@
 
 package com.owncloud.android.lib.resources.files;
 
-import com.owncloud.android.lib.common.OwnCloudClient;
+import com.nextcloud.common.NextcloudClient;
+import com.nextcloud.operations.dav.PropFindMethod;
 import com.owncloud.android.lib.common.network.WebdavUtils;
 import com.owncloud.android.lib.common.operations.RemoteOperation;
 import com.owncloud.android.lib.common.operations.RemoteOperationResult;
 import com.owncloud.android.lib.common.operations.RemoteOperationResult.ResultCode;
 import com.owncloud.android.lib.common.utils.Log_OC;
 
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.jackrabbit.webdav.MultiStatusResponse;
-import org.apache.jackrabbit.webdav.client.methods.PropFindMethod;
-import org.apache.jackrabbit.webdav.property.DavPropertyName;
-import org.apache.jackrabbit.webdav.property.DavPropertyNameSet;
-
 import java.util.ArrayList;
+
+import at.bitfire.dav4jvm.Property;
+import at.bitfire.dav4jvm.Response;
+import at.bitfire.dav4jvm.exception.NotFoundException;
+import at.bitfire.dav4jvm.property.GetETag;
 
 /**
  * Check if file is up to date, by checking only eTag
  */
 public class CheckEtagRemoteOperation extends RemoteOperation {
-
-    private static final int SYNC_READ_TIMEOUT = 40000;
-    private static final int SYNC_CONNECTION_TIMEOUT = 5000;
     private static final String TAG = CheckEtagRemoteOperation.class.getSimpleName();
 
     private String path;
@@ -61,41 +58,38 @@ public class CheckEtagRemoteOperation extends RemoteOperation {
 
 
     @Override
-    protected RemoteOperationResult run(OwnCloudClient client) {
+    public RemoteOperationResult run(NextcloudClient client) {
         PropFindMethod propfind = null;
-        
+
         try {
-            DavPropertyNameSet propSet = new DavPropertyNameSet();
-            propSet.add(DavPropertyName.GETETAG);
+            ArrayList<Property.Name> propList = new ArrayList();
+            propList.add(GetETag.NAME);
 
-            propfind = new PropFindMethod(client.getFilesDavUri(path),
-                    propSet,
-                    0);
-            int status = client.executeMethod(propfind, SYNC_READ_TIMEOUT, SYNC_CONNECTION_TIMEOUT);
+            propfind = new PropFindMethod(client.getFilesDavUri(path), propList, 0);
+            client.execute(propfind);
+            int status = propfind.statusCode();
 
-            if (status == HttpStatus.SC_MULTI_STATUS || status == HttpStatus.SC_OK) {
-                MultiStatusResponse resp = propfind.getResponseBodyAsMultiStatus().getResponses()[0];
+            //if (status == HttpStatus.SC_MULTI_STATUS || status == HttpStatus.SC_OK) {
+            Response resp = propfind.davResponse();
 
-                String etag = WebdavUtils.parseEtag((String) resp.getProperties(HttpStatus.SC_OK)
-                        .get(DavPropertyName.GETETAG).getValue());
+            String etag = WebdavUtils.parseEtag(resp.get(GetETag.class).getETag());
 
-                if (etag.equals(expectedEtag)) {
-                    return new RemoteOperationResult(ResultCode.ETAG_UNCHANGED);
-                } else {
-                    RemoteOperationResult result = new RemoteOperationResult(ResultCode.ETAG_CHANGED);
+            if (etag.equals(expectedEtag)) {
+                return new RemoteOperationResult(ResultCode.ETAG_UNCHANGED);
+            } else {
+                RemoteOperationResult result = new RemoteOperationResult(ResultCode.ETAG_CHANGED);
 
-                    ArrayList<Object> list = new ArrayList<>();
-                    list.add(etag);
-                    result.setData(list);
+                ArrayList<Object> list = new ArrayList<>();
+                list.add(etag);
+                result.setData(list);
 
-                    return result;
-                }
+                return result;
             }
-            
-            if (status == HttpStatus.SC_NOT_FOUND) {
+            //}
+        } catch (Exception e) {
+            if (e instanceof NotFoundException) {
                 return new RemoteOperationResult(ResultCode.FILE_NOT_FOUND);
             }
-        } catch (Exception e) {
             Log_OC.e(TAG, "Error while retrieving eTag");
         } finally {
             if (propfind != null) {
