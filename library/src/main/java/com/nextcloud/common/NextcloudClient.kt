@@ -38,7 +38,6 @@ import com.owncloud.android.lib.common.accounts.AccountUtils
 import com.owncloud.android.lib.common.network.AdvancedX509TrustManager
 import com.owncloud.android.lib.common.network.NetworkUtils
 import com.owncloud.android.lib.common.network.RedirectionPath
-import com.owncloud.android.lib.common.network.WebdavUtils
 import com.owncloud.android.lib.common.operations.RemoteOperation
 import com.owncloud.android.lib.common.operations.RemoteOperationResult
 import com.owncloud.android.lib.common.utils.Log_OC
@@ -55,7 +54,7 @@ import javax.net.ssl.TrustManager
 class NextcloudClient private constructor(
     val delegate: NextcloudUriDelegate,
     var credentials: String,
-    val client: OkHttpClient,
+    var client: OkHttpClient,
 ) : NextcloudUriProvider by delegate {
     var followRedirects = true
 
@@ -192,13 +191,5 @@ class NextcloudClient private constructor(
 
     fun getUserIdPlain(): String {
         return delegate.userId!!
-    }
-
-    fun getFilesDavUri(path: String): String {
-        return getDavUri().toString() + "/files/" + userId + "/" + WebdavUtils.encodePath(path)
-    }
-
-    fun getDavUri(): Uri {
-        return Uri.parse(baseUri.toString() + AccountUtils.WEBDAV_PATH_9_0)
     }
 }
