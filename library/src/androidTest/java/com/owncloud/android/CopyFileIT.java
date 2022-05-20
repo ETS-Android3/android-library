@@ -26,6 +26,10 @@
  */
 package com.owncloud.android;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import android.util.Log;
 
 import com.owncloud.android.lib.common.operations.RemoteOperationResult;
@@ -41,10 +45,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Class to test CopyRemoteFileOperation
@@ -180,7 +180,7 @@ public class CopyFileIT extends AbstractIT {
 
         RemoteOperationResult result;
         for (String folderPath : FOLDERS_IN_FIXTURE) {
-            result = new CreateFolderRemoteOperation(folderPath, true).execute(client);
+            result = new CreateFolderRemoteOperation(folderPath, true).execute(nextcloudClient);
 
             assertTrue("Error creating folder" + folderPath + ": " + result, result.isSuccess());
         }

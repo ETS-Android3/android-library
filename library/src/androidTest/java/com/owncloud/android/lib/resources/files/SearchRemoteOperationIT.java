@@ -73,7 +73,7 @@ public class SearchRemoteOperationIT extends AbstractIT {
 
     @Test
     public void testSearchByFileIdSuccess() {
-        assertTrue(new CreateFolderRemoteOperation("/test/", true).execute(client).isSuccess());
+        assertTrue(new CreateFolderRemoteOperation("/test/", true).execute(nextcloudClient).isSuccess());
 
         RemoteOperationResult readFile = new ReadFileRemoteOperation("/test/").execute(client);
         assertTrue(readFile.isSuccess());
@@ -164,7 +164,7 @@ public class SearchRemoteOperationIT extends AbstractIT {
         String path = "/testFolder/";
 
         // create folder, make it favorite
-        new CreateFolderRemoteOperation(path, true).execute(client);
+        new CreateFolderRemoteOperation(path, true).execute(nextcloudClient);
         assertTrue(new ToggleFavoriteRemoteOperation(true, path).execute(client).isSuccess());
 
         SearchRemoteOperation sut = new SearchRemoteOperation("",
@@ -413,7 +413,7 @@ public class SearchRemoteOperationIT extends AbstractIT {
         assertTrue(result.isSuccess());
         assertTrue(result.getResultData().isEmpty());
 
-        assertTrue(new CreateFolderRemoteOperation("/folder/", false).execute(client).isSuccess());
+        assertTrue(new CreateFolderRemoteOperation("/folder/", false).execute(nextcloudClient).isSuccess());
 
         result = sut.execute(client);
         assertTrue(result.isSuccess());

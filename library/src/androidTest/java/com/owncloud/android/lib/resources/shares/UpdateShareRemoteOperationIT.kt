@@ -60,7 +60,12 @@ class UpdateShareRemoteOperationIT : AbstractIT() {
     }
 
     private fun testUpdateNote(note: String) {
-        Assert.assertTrue(CreateFolderRemoteOperation("/note/", true).execute(client).isSuccess)
+        Assert.assertTrue(
+            CreateFolderRemoteOperation(
+                "/note/",
+                true
+            ).execute(nextcloudClient).isSuccess
+        )
 
         // share folder to user "admin"
         val createOperationResult = CreateShareRemoteOperation(
@@ -96,7 +101,12 @@ class UpdateShareRemoteOperationIT : AbstractIT() {
     @Test
     fun updateLabel() {
         val label = "test & test"
-        Assert.assertTrue(CreateFolderRemoteOperation("/label/", true).execute(client).isSuccess)
+        Assert.assertTrue(
+            CreateFolderRemoteOperation(
+                "/label/",
+                true
+            ).execute(nextcloudClient).isSuccess
+        )
 
         // share folder via public link
         val createOperationResult = CreateShareRemoteOperation(
@@ -131,7 +141,12 @@ class UpdateShareRemoteOperationIT : AbstractIT() {
     @Test
     fun invalidPassword() {
         val folder = "/invalidPassword/"
-        Assert.assertTrue(CreateFolderRemoteOperation(folder, true).execute(client).isSuccess)
+        Assert.assertTrue(
+            CreateFolderRemoteOperation(
+                folder,
+                true
+            ).execute(nextcloudClient).isSuccess
+        )
 
         // share folder via public link
         val createOperationResult = CreateShareRemoteOperation(
@@ -178,7 +193,12 @@ class UpdateShareRemoteOperationIT : AbstractIT() {
     @Test
     fun validPassword() {
         val folder = "/validPassword/"
-        Assert.assertTrue(CreateFolderRemoteOperation(folder, true).execute(client).isSuccess)
+        Assert.assertTrue(
+            CreateFolderRemoteOperation(
+                folder,
+                true
+            ).execute(nextcloudClient).isSuccess
+        )
 
         // share folder via public link
         val createOperationResult = CreateShareRemoteOperation(
